@@ -6,13 +6,13 @@
     <driver>com.mysql.jdbc.Driver</driver>
     <url>jdbc:mysql://localhost/ConnePoolTest</url>
     <user>gloria</user>
-    <password>sunshine1229</password>
+    <password>sdfsdfsf</password>
   </group>
   <group>
     <name>connect_pool_test1</name>
     <driver>com.mysql.jdbc.Driver</driver>
     <url>jdbc:mysql://localhost/ConnTest</url>
     <user>gloria</user>
-    <password>sunshine1229</password>
+    <password>asdfsdfeffzsdf</password>
   </group>
 </config>
