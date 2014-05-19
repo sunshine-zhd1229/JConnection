@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+  <group>
+    <name>connect_pool_test</name>
+    <driver>com.mysql.jdbc.Driver</driver>
+    <url>jdbc:mysql://localhost/ConnePoolTest</url>
+    <user>gloria</user>
+    <password>sunshine1229</password>
+  </group>
+  <group>
+    <name>connect_pool_test1</name>
+    <driver>com.mysql.jdbc.Driver</driver>
+    <url>jdbc:mysql://localhost/ConnTest</url>
+    <user>gloria</user>
+    <password>sunshine1229</password>
+  </group>
+</config>
