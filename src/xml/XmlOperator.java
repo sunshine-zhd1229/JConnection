@@ -1,12 +1,8 @@
 package xml;
 
 import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.SAXReader;
-import org.dom4j.io.XMLWriter;
 
 import java.io.*;
 import java.util.*;
@@ -14,9 +10,9 @@ import java.util.*;
 import static xml.XmlOperator.Status.*;
 
 /**
- * operate xml document: create, parse, delete
- * Created by gloria_z on 14-5-19.
- */
+* operate xml document: create, parse, delete
+* Created by gloria_z on 14-5-19.
+*/
 public class XmlOperator implements XmlDocument {
     //config items
     private Set<String> keys;
@@ -55,26 +51,24 @@ public class XmlOperator implements XmlDocument {
         }
     }
 
+    //create document from config file
     @Override
-    public boolean createDocument(String sourceFile, String targerFile) {
-        if (sourceFile == null || targerFile == null)
-            return false;
+    public Document createDocument(String sourceFile) {
+        if (sourceFile == null)
+            return null;
         String errMessage = "";
         BufferedReader inputFile;
         OutputStream out;
         try {
-            //open the source/target file.
-            File file = new File(sourceFile);
-            if (!file.exists()) {
-                ERROR.errorMessage("config file doesn't exists");
-                return false;
-            }
+            //open the source file.
+            inputFile = new BufferedReader(new FileReader(sourceFile));
 
-            inputFile = new BufferedReader(new FileReader(file));
             //create a document
             Document document = DocumentHelper.createDocument();
+            document.setXMLEncoding("UTF-8");
             Element root = document.addElement("config");
             Element group = null;
+
             //parse sourceFile
             String line;
             Status status = FIND_BEGINNING;
@@ -122,77 +116,59 @@ public class XmlOperator implements XmlDocument {
                 }
                 if (status == FINISH) {
                     //write into the target file
-                    out =
-                    new BufferedOutputStream(new FileOutputStream(targerFile));
-                    OutputFormat format = OutputFormat.createPrettyPrint();
-                    format.setEncoding("UTF-8");
-                    XMLWriter writer = new XMLWriter(out, format);
-                    writer.write(document);
-                    writer.close();
-                    out.close();
                     inputFile.close();
-                    return true;
+                    return document;
                 }
                 if (status == ERROR) {
                     //print error
                     ERROR.errorMessage(errMessage, lineNumber, line);
                     inputFile.close();
-                    break;
+                    return null;
                 }
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            ERROR.errorMessage("config file doesn't exists");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
+    //get config items form document
     @Override @SuppressWarnings("unchecked")
     public boolean
-    parseDocument(String fileName, ArrayList<HashMap<String, String>> items) {
-        SAXReader reader = new SAXReader();
-        File file = new File(fileName);
-        if (!file.exists()) {
-            ERROR.errorMessage("config file doesn't exists");
+    parseDocument(Document document, ArrayList<HashMap<String, String>> items) {
+        if (document == null || items == null)
             return false;
-        }
 
-        Document document;
-        try {
-            document = reader.read(file);
-            //get root
-            Element root = document.getRootElement();
-            List<Element> childElements = root.elements();
-            //get child node
-            for (Element element : childElements) {
-                HashMap<String, String> map = new HashMap<String, String>();
-                List<Element> ele = element.elements();
-                for (Element e : ele)
-                    map.put(e.getName(), e.getText());
-                items.add(map);
-            }
-        } catch (DocumentException e) {
-            e.printStackTrace();
+        //get root
+        Element root = document.getRootElement();
+        List<Element> childElements = root.elements();
+
+        //get child node
+        for (Element element : childElements) {
+            HashMap<String, String> map = new HashMap<String, String>();
+            List<Element> ele = element.elements();
+            for (Element e : ele)
+                map.put(e.getName(), e.getText());
+            items.add(map);
         }
-        return false;
+        return true;
     }
 
+    //delete document
     @Override
     public boolean deleteDocument(String fileName) {
         if (fileName == null)
             return false;
         File file = new File(fileName);
-        if (file.exists())
-            return false;
-        return file.isFile() && file.delete();
+        return file.exists() && file.isFile() && file.delete();
     }
 
     public boolean setConfigItems(Set<String> keys) {
         if (keys == null)
             return false;
-        for (String key : keys)
-            this.keys.add(key);
+        this.keys.addAll(keys);
         return true;
     }
 
@@ -200,18 +176,6 @@ public class XmlOperator implements XmlDocument {
         if (keys == null)
             return false;
         Collections.addAll(this.keys, keys);
-        return false;
-    }
-
-    public static void main(String[] args) {
-        String[]items = {"user", "name", "driver", "url", "password"};
-        XmlOperator opt = new XmlOperator(items);
-        opt.createDocument("config.ini", "src/config/config.xml");
-        ArrayList<HashMap<String, String>> list = new
-                ArrayList<HashMap<String, String>>();
-        opt.parseDocument("src/config/config.xml", list);
-        for (HashMap map : list)
-            System.out.println(map);
-        opt.deleteDocument("src/config/config.xml");
+        return true;
     }
 }
